@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Cooking App",
+    "slug": "cooking-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#FF8A65",
+      "resizeMode": "contain"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FF8A65"
+      }
+    },
+    "web": {},
+    "scheme": "cooking",
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}

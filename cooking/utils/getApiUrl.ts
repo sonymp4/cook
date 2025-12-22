@@ -21,3 +21,4 @@ export function getApiUrl(): string {
   // For mobile (iOS/Android physical device), use your computer's IP
   return `http://${YOUR_IP}:5000/api`;
 }
+

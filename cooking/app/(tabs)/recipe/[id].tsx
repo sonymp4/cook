@@ -65,7 +65,7 @@ export default function RecipeDetailScreen() {
   const loadRecipe = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/recipes/${id}`);
+      const response = await api.get<Recipe>(`/recipes/${id}`);
       if (response.success && response.data) {
         setRecipe(response.data);
       } else {
@@ -211,26 +211,26 @@ export default function RecipeDetailScreen() {
   const calories = recipe.perServing?.calories
     ? Math.round(recipe.perServing.calories)
     : recipe.totalCalories && recipe.servings
-    ? Math.round(recipe.totalCalories / recipe.servings)
-    : Math.round(recipe.totalCalories) || 0;
+      ? Math.round(recipe.totalCalories / recipe.servings)
+      : Math.round(recipe.totalCalories) || 0;
 
   const protein = recipe.perServing?.protein
     ? recipe.perServing.protein.toFixed(1)
     : recipe.totalProtein && recipe.servings
-    ? (recipe.totalProtein / recipe.servings).toFixed(1)
-    : recipe.totalProtein?.toFixed(1) || '0.0';
+      ? (recipe.totalProtein / recipe.servings).toFixed(1)
+      : recipe.totalProtein?.toFixed(1) || '0.0';
 
   const carbs = recipe.perServing?.carbs
     ? recipe.perServing.carbs.toFixed(1)
     : recipe.totalCarbs && recipe.servings
-    ? (recipe.totalCarbs / recipe.servings).toFixed(1)
-    : recipe.totalCarbs?.toFixed(1) || '0.0';
+      ? (recipe.totalCarbs / recipe.servings).toFixed(1)
+      : recipe.totalCarbs?.toFixed(1) || '0.0';
 
   const fats = recipe.perServing?.fats
     ? recipe.perServing.fats.toFixed(1)
     : recipe.totalFats && recipe.servings
-    ? (recipe.totalFats / recipe.servings).toFixed(1)
-    : recipe.totalFats?.toFixed(1) || '0.0';
+      ? (recipe.totalFats / recipe.servings).toFixed(1)
+      : recipe.totalFats?.toFixed(1) || '0.0';
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -646,4 +646,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
 

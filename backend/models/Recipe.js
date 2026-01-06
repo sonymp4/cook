@@ -31,17 +31,15 @@ const recipeSchema = new mongoose.Schema(
     },
     instructions: {
       type: [String],
-      required: [true, "Instructions are required"],
+      // required: [true, "Instructions are required"], // Made optional for flexibility
     },
     ingredients: {
       type: [recipeIngredientSchema],
-      required: [true, "At least one ingredient is required"],
-      validate: {
-        validator: function (v) {
-          return v && v.length > 0;
-        },
-        message: "Recipe must have at least one ingredient",
-      },
+      default: [], // Made optional to allow manual macro entry
+    },
+    spices: {
+      type: [String],
+      default: []
     },
     servings: {
       type: Number,
@@ -109,7 +107,7 @@ const recipeSchema = new mongoose.Schema(
 
 // Calculate nutritional values before saving
 recipeSchema.pre("save", async function () {
-  if (this.isModified("ingredients") || this.isNew) {
+  if ((this.isModified("ingredients") || this.isNew) && this.ingredients && this.ingredients.length > 0) {
     try {
       let totalCalories = 0;
       let totalProtein = 0;
@@ -123,7 +121,7 @@ recipeSchema.pre("save", async function () {
         if (item.ingredient) {
           // Convert quantity to grams
           let quantityInGrams = item.quantity;
-          
+
           if (item.unit === "kg") {
             quantityInGrams = item.quantity * 1000;
           } else if (item.unit === "ml" || item.unit === "l") {
@@ -194,6 +192,7 @@ recipeSchema.virtual("perServing").get(function () {
 });
 
 module.exports = mongoose.model("Recipe", recipeSchema);
+
 
 
 

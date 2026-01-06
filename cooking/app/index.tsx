@@ -14,9 +14,17 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
+import { getApiUrl } from '@/utils/getApiUrl';
+
+const API_BASE_URL = getApiUrl();
 
 export default function LoginScreen() {
   const [isLogin, setIsLogin] = useState(true);
+
+  // Reset state when screen comes into focus (e.g. after logout)
+  // This is handled by React Native's component lifecycle naturally if unmounted,
+  // but let's be sure.
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,16 +48,20 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       if (isLogin) {
-        await login(email, password);
+        const user = await login(email, password);
+        if (user.role === 'admin') {
+          router.replace('/admin/dashboard');
+        } else {
+          router.replace('/(tabs)/explore');
+        }
       } else {
         await register(name, email, password);
+        router.replace('/(tabs)/explore');
       }
-      // Success - token and user are saved, navigate to explore
-      router.replace('/(tabs)/explore');
     } catch (error: any) {
       console.error('Auth error:', error);
       Alert.alert(
-        'Error', 
+        'Error',
         error.message || 'Authentication failed. Make sure:\n• Backend server is running\n• Your IP address is correct\n• You are on the same Wi-Fi network'
       );
     } finally {
@@ -126,22 +138,28 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.cards}>
-          <TouchableOpacity
-            style={[styles.card, { backgroundColor: '#FFFFFF', borderColor: '#E0E0E0' }]}
-            onPress={() => router.push('/(tabs)/explore')}>
-            <Text style={styles.cardEmoji}>🥄</Text>
-            <Text style={[styles.cardText, { color: colors.text }]}>Explore Recipes</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.card, { backgroundColor: '#FFFFFF', borderColor: '#E0E0E0' }]}
-            onPress={() => router.push('/(tabs)/saved')}>
-            <Text style={styles.cardEmoji}>📖</Text>
-            <Text style={[styles.cardText, { color: colors.text }]}>Saved Recipes</Text>
-          </TouchableOpacity>
-        </View>
+
+
+
+        <TouchableOpacity
+          onPress={async () => {
+            Alert.alert('Testing Connection', `Attempting to connect to:\n${API_BASE_URL}/server-status`);
+            try {
+              const res = await fetch(`${API_BASE_URL.replace('/api', '')}`);
+              if (res.ok) {
+                Alert.alert('Success', '✅ Connected to Backend Server!');
+              } else {
+                Alert.alert('Server Reachable', '⚠️ Connected but got ' + res.status);
+              }
+            } catch (e: any) {
+              Alert.alert('Connection Failed', '❌ Could not reach server.\n\nPossible causes:\n1. Firewall is blocking (Run PowerShell command)\n2. Different Wi-Fi networks\n3. Server not running\n\nError: ' + e.message);
+            }
+          }}
+          style={{ padding: 10, alignItems: 'center', marginTop: 10 }}>
+          <Text style={{ color: '#666', textDecorationLine: 'underline' }}>Test Server Connection</Text>
+        </TouchableOpacity>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAvoidingView >
   );
 }
 
@@ -229,4 +247,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
 

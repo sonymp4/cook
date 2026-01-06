@@ -12,6 +12,7 @@ exports.protect = async (req, res, next) => {
     }
 
     if (!token) {
+      console.log("❌ [AUTH DEBUG] No token provided in headers:", req.headers.authorization);
       return res.status(401).json({
         success: false,
         error: "Not authorized to access this route",
@@ -21,9 +22,19 @@ exports.protect = async (req, res, next) => {
     try {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key-change-in-production");
+      console.log("✅ [AUTH DEBUG] Token verified for User ID:", decoded.userId);
       req.userId = decoded.userId;
+
+      // Load user for admin check
+      const currentUser = await User.findById(decoded.userId);
+      if (!currentUser) {
+        console.log("❌ [AUTH DEBUG] User not found in DB");
+        return res.status(401).json({ success: false, error: "User not found" });
+      }
+      req.user = currentUser;
       next();
     } catch (err) {
+      console.log("❌ [AUTH DEBUG] Token verification failed:", err.message);
       return res.status(401).json({
         success: false,
         error: "Not authorized to access this route",
@@ -36,6 +47,7 @@ exports.protect = async (req, res, next) => {
     });
   }
 };
+
 
 
 

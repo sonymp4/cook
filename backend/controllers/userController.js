@@ -104,3 +104,36 @@ exports.getFavorites = async (req, res) => {
 
 
 
+
+
+// @desc    Update user body metrics
+// @route   PUT /api/users/profile/metrics
+// @access  Private
+exports.updateMetrics = async (req, res) => {
+  try {
+    const { age, gender, height, weight, activityLevel, goal } = req.body;
+
+    const user = await User.findById(req.userId);
+
+    // Update metrics fields
+    if (!user.metrics) user.metrics = {};
+    if (age) user.metrics.age = age;
+    if (gender) user.metrics.gender = gender;
+    if (height) user.metrics.height = height;
+    if (weight) user.metrics.weight = weight;
+    if (activityLevel) user.metrics.activityLevel = activityLevel;
+    if (goal) user.metrics.goal = goal;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      data: user.metrics,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};

@@ -10,8 +10,10 @@ router.use("/ingredients", ingredientRoutes);
 router.use("/recipes", recipeRoutes);
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
+router.use("/fitness", require("./fitness"));
 
 module.exports = router;
+
 
 
 

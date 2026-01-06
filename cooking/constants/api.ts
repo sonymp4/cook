@@ -27,19 +27,25 @@ class ApiClient {
   ): Promise<ApiResponse<T>> {
     try {
       const token = await this.getToken();
-      const headers: HeadersInit = {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        ...options.headers,
+        ...(options.headers as Record<string, string>),
       };
 
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
         headers,
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
@@ -58,10 +64,12 @@ class ApiClient {
         ...data,
       };
     } catch (error: any) {
-      console.error('API Error:', error);
+      if (error.name !== 'AbortError') {
+        console.log('API Error:', error.message);
+      }
       return {
         success: false,
-        error: error.message || 'Network request failed',
+        error: (error.name === 'AbortError' ? 'Request timed out' : error.message) || 'Network request failed',
       };
     }
   }
@@ -90,4 +98,5 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
+
 

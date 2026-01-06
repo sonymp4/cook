@@ -67,3 +67,4 @@ if (Platform.OS === 'android' && __DEV__) {
 - Check if backend is accessible from your browser: `http://YOUR_IP:5000`
 - If it works in browser but not in app, check the IP address in `getApiUrl.ts`
 
+

@@ -61,7 +61,21 @@ export default function TabLayout() {
           tabBarIcon: () => <Text style={{ fontSize: 24 }}>👨‍🍳</Text>,
         }}
       />
+      <Tabs.Screen
+        name="recipe/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="fitness"
+        options={{
+          title: 'Fitness',
+          tabBarIcon: () => <Text style={{ fontSize: 24 }}>💪</Text>,
+        }}
+      />
     </Tabs>
   );
 }
+
 

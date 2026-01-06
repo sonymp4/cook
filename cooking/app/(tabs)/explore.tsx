@@ -10,7 +10,7 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
@@ -84,9 +84,11 @@ export default function ExploreScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
-  useEffect(() => {
-    loadRecipes();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadRecipes();
+    }, [])
+  );
 
   const buildQueryString = () => {
     const params = new URLSearchParams();
@@ -100,7 +102,10 @@ export default function ExploreScreen() {
     try {
       setLoading(true);
       const query = buildQueryString();
-      const endpoint = query ? `/recipes?${query}` : '/recipes';
+      const timestamp = new Date().getTime();
+      const endpoint = query
+        ? `/recipes?${query}&_t=${timestamp}`
+        : `/recipes?_t=${timestamp}`;
       const response = await api.get<Recipe[]>(endpoint);
       if (response.success) {
         setRecipes(response.data || []);
@@ -625,4 +630,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
 

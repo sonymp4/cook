@@ -155,6 +155,7 @@ exports.getRecipe = async (req, res) => {
 // @access  Public
 exports.createRecipe = async (req, res) => {
   try {
+    console.log("👉 [DEBUG] createRecipe called with body:", JSON.stringify(req.body, null, 2));
     const recipe = await Recipe.create(req.body);
     await recipe.populate("ingredients.ingredient", "name caloriesPer100g proteinPer100g carbsPer100g fatsPer100g");
 
@@ -169,6 +170,7 @@ exports.createRecipe = async (req, res) => {
       data: recipeObj,
     });
   } catch (error) {
+    console.error("❌ [DEBUG] createRecipe FAILED:", error);
     res.status(400).json({
       success: false,
       error: error.message,
@@ -314,6 +316,7 @@ exports.calculateNutrition = async (req, res) => {
     });
   }
 };
+
 
 
 

@@ -9,11 +9,15 @@ const {
   calculateNutrition,
 } = require("../controllers/recipeController");
 
-router.route("/").get(getAllRecipes).post(createRecipe);
+const { protect } = require("../middleware/auth");
+const { admin } = require("../middleware/admin");
+
+router.route("/").get(getAllRecipes).post(protect, admin, createRecipe);
 router.route("/calculate-nutrition").post(calculateNutrition);
-router.route("/:id").get(getRecipe).put(updateRecipe).delete(deleteRecipe);
+router.route("/:id").get(getRecipe).put(protect, admin, updateRecipe).delete(protect, admin, deleteRecipe);
 
 module.exports = router;
+
 
 
 

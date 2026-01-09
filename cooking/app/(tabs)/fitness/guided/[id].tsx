@@ -186,7 +186,28 @@ export default function GuidedSession() {
         );
     }
 
+    if (!workout.exercises || workout.exercises.length === 0) {
+        return (
+            <SafeAreaView style={[styles.container, { backgroundColor: '#1F2937', justifyContent: 'center', alignItems: 'center' }]}>
+                <StatusBar barStyle="light-content" />
+                <View style={{ alignItems: 'center', padding: 20 }}>
+                    <Ionicons name="alert-circle-outline" size={80} color="#F59E0B" />
+                    <Text style={[styles.finishedTitle, { textAlign: 'center', marginTop: 20 }]}>No Exercises Found</Text>
+                    <Text style={[styles.finishedSubtitle, { textAlign: 'center', marginTop: 10, fontSize: 16 }]}>
+                        This workout is empty. Please ask an admin to add exercises.
+                    </Text>
+                </View>
+                <TouchableOpacity style={[styles.exitBtn, { marginTop: 40 }]} onPress={() => router.back()}>
+                    <Text style={styles.exitBtnText}>GO BACK</Text>
+                </TouchableOpacity>
+            </SafeAreaView>
+        );
+    }
+
     const currentExercise = workout.exercises[currentExerciseIndex];
+    // Safety check just in case index goes out of bounds
+    if (!currentExercise) return null;
+
     const nextExercise = workout.exercises[currentExerciseIndex + 1];
     const backgroundColor = getPhaseColor();
 

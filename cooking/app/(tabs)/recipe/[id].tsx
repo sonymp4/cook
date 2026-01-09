@@ -275,7 +275,7 @@ export default function RecipeDetailScreen() {
                 {recipe.difficulty?.charAt(0).toUpperCase() + recipe.difficulty?.slice(1) || 'Medium'}
               </Text>
             </View>
-            {recipe.prepTime && (
+            {!!recipe.prepTime && (
               <View style={styles.metaItem}>
                 <Text style={styles.metaEmoji}>⏱️</Text>
                 <Text style={[styles.metaText, { color: '#555555' }]}>
@@ -283,7 +283,7 @@ export default function RecipeDetailScreen() {
                 </Text>
               </View>
             )}
-            {recipe.cookTime && (
+            {!!recipe.cookTime && (
               <View style={styles.metaItem}>
                 <Text style={styles.metaEmoji}>🔥</Text>
                 <Text style={[styles.metaText, { color: '#555555' }]}>

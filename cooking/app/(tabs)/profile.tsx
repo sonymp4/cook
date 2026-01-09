@@ -128,6 +128,12 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (user) {
       loadData();
+    } else {
+      // Clear state on logout
+      setMetrics({});
+      setDailyLog({ calories: 0, protein: 0, carbs: 0, water: 0 });
+      setRecipes([]);
+      setFoodInput({ calories: '', protein: '', carbs: '' });
     }
   }, [user]);
 
@@ -135,10 +141,8 @@ export default function ProfileScreen() {
     setLoading(true);
     try {
       // 1. Get Metrics (from user object or refresh)
-      // Assuming user object has metrics, or we fetch profile
-      // For now, we'll try to use user.metrics if available, but it might not be there yet without backend restart/refresh
-      // Let's rely on what we can get. Ideally we'd fetch /api/users/profile
-      if (user?.metrics) setMetrics(user.metrics);
+      // Reset metrics to empty object if user has none, ensuring we don't keep stale data
+      setMetrics(user?.metrics || {});
 
       // 2. Get Daily Log
       const today = new Date().toISOString().split('T')[0];
@@ -357,8 +361,14 @@ export default function ProfileScreen() {
             <Text style={styles.email}>Fitness Enthusiast</Text>
           </View>
           <TouchableOpacity style={styles.logoutBtn} onPress={async () => {
-            await logout();
-            router.replace('/');
+            try {
+              await logout();
+            } catch (e) {
+              console.error('Logout failed:', e);
+            } finally {
+              // Force navigation to the root index (Login Screen)
+              router.replace('/');
+            }
           }}>
             <Ionicons name="log-out-outline" size={24} color="#fff" />
           </TouchableOpacity>

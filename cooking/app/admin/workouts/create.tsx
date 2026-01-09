@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Alert, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { api } from '@/constants/api';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -16,10 +17,40 @@ export default function CreateWorkout() {
         bodypart: 'General',
         sets: '3',
         imageUrl: '',
-        description: ''
+        description: '',
+        exercises: [] as any[]
+    });
+
+    const [isAdding, setIsAdding] = useState(false);
+    const [newExercise, setNewExercise] = useState({
+        name: '',
+        sets: '',
+        reps: '',
+        duration: '',
+        breakDuration: '',
+        instructions: ''
     });
 
     const [loading, setLoading] = useState(false);
+
+    const handleAddExercise = () => {
+        if (!newExercise.name) {
+            Alert.alert('Error', 'Exercise name is required');
+            return;
+        }
+        setForm(prev => ({
+            ...prev,
+            exercises: [...prev.exercises, { ...newExercise, sets: newExercise.sets || prev.sets }]
+        }));
+        setNewExercise({ name: '', sets: '', reps: '', duration: '', breakDuration: '', instructions: '' });
+        setIsAdding(false);
+    };
+
+    const removeExercise = (index: number) => {
+        const updated = [...form.exercises];
+        updated.splice(index, 1);
+        setForm(prev => ({ ...prev, exercises: updated }));
+    };
 
     const handleSubmit = async () => {
         if (!form.name || !form.bodypart) {
@@ -32,7 +63,12 @@ export default function CreateWorkout() {
             await api.post('/fitness/workouts', {
                 ...form,
                 sets: Number(form.sets),
-                exercises: [], // Empty for now
+                exercises: form.exercises.map(ex => ({
+                    ...ex,
+                    sets: Number(ex.sets),
+                    duration: Number(ex.duration),
+                    breakDuration: Number(ex.breakDuration)
+                }))
             });
             Alert.alert('Success', 'Workout created!');
             router.back();
@@ -114,6 +150,116 @@ export default function CreateWorkout() {
                 multiline
             />
 
+            <View style={styles.divider} />
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Exercises ({form.exercises.length})</Text>
+                <TouchableOpacity onPress={() => setIsAdding(!isAdding)} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name={isAdding ? "close-circle" : "add-circle"} size={24} color={colors.tint} />
+                    <Text style={{ color: colors.tint, fontWeight: 'bold', marginLeft: 5 }}>{isAdding ? "Cancel" : "Add Exercise"}</Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* List of Added Exercises */}
+            {form.exercises.map((ex, idx) => (
+                <View key={idx} style={[styles.exerciseCard, { backgroundColor: colors.cardBackground, borderColor: colors.borderColor }]}>
+                    <View style={{ flex: 1 }}>
+                        <Text style={[styles.exerciseName, { color: colors.text }]}>{ex.name}</Text>
+                        <Text style={{ color: colors.textMuted, fontSize: 12 }}>
+                            {form.type === 'guided'
+                                ? `${ex.duration || '300'}s work • ${ex.breakDuration || '30'}s rest`
+                                : `${ex.sets} sets • ${ex.reps || '10'} reps`
+                            }
+                        </Text>
+                        {ex.instructions ? <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>{ex.instructions}</Text> : null}
+                    </View>
+                    <TouchableOpacity onPress={() => removeExercise(idx)} style={{ padding: 5 }}>
+                        <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                    </TouchableOpacity>
+                </View>
+            ))}
+
+            {/* Add Exercise Form */}
+            {isAdding && (
+                <View style={[styles.addForm, { backgroundColor: colors.cardBackground, borderColor: colors.borderColor }]}>
+                    <Text style={[styles.label, { color: colors.text }]}>Exercise Name *</Text>
+                    <TextInput
+                        style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.borderColor }]}
+                        value={newExercise.name}
+                        onChangeText={(t) => setNewExercise({ ...newExercise, name: t })}
+                        placeholder="e.g. Push Ups"
+                        placeholderTextColor={colors.textMuted}
+                    />
+
+                    <View style={{ flexDirection: 'row', gap: 10 }}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={[styles.label, { color: colors.text }]}>Sets</Text>
+                            <TextInput
+                                style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.borderColor }]}
+                                value={newExercise.sets}
+                                onChangeText={(t) => setNewExercise({ ...newExercise, sets: t })}
+                                keyboardType="numeric"
+                                placeholder={form.sets}
+                                placeholderTextColor={colors.textMuted}
+                            />
+                        </View>
+                        {form.type === 'standard' && (
+                            <View style={{ flex: 1 }}>
+                                <Text style={[styles.label, { color: colors.text }]}>Reps</Text>
+                                <TextInput
+                                    style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.borderColor }]}
+                                    value={newExercise.reps}
+                                    onChangeText={(t) => setNewExercise({ ...newExercise, reps: t })}
+                                    placeholder="10-12"
+                                    placeholderTextColor={colors.textMuted}
+                                />
+                            </View>
+                        )}
+                    </View>
+
+                    {form.type === 'guided' && (
+                        <View style={{ flexDirection: 'row', gap: 10 }}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={[styles.label, { color: colors.text }]}>Duration (s)</Text>
+                                <TextInput
+                                    style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.borderColor }]}
+                                    value={newExercise.duration}
+                                    onChangeText={(t) => setNewExercise({ ...newExercise, duration: t })}
+                                    keyboardType="numeric"
+                                    placeholder="300"
+                                    placeholderTextColor={colors.textMuted}
+                                />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={[styles.label, { color: colors.text }]}>Break (s)</Text>
+                                <TextInput
+                                    style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.borderColor }]}
+                                    value={newExercise.breakDuration}
+                                    onChangeText={(t) => setNewExercise({ ...newExercise, breakDuration: t })}
+                                    keyboardType="numeric"
+                                    placeholder="30"
+                                    placeholderTextColor={colors.textMuted}
+                                />
+                            </View>
+                        </View>
+                    )}
+
+                    <Text style={[styles.label, { color: colors.text }]}>Instructions</Text>
+                    <TextInput
+                        style={[styles.input, { height: 60, textAlignVertical: 'top', backgroundColor: colors.background, color: colors.text, borderColor: colors.borderColor }]}
+                        value={newExercise.instructions}
+                        onChangeText={(t) => setNewExercise({ ...newExercise, instructions: t })}
+                        placeholder="Tips for form..."
+                        placeholderTextColor={colors.textMuted}
+                        multiline
+                    />
+
+                    <TouchableOpacity style={[styles.button, { backgroundColor: colors.tint, marginTop: 0 }]} onPress={handleAddExercise}>
+                        <Text style={styles.buttonText}>Add to Workout</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
             <TouchableOpacity
                 style={[styles.button, { backgroundColor: colors.tint, opacity: loading ? 0.7 : 1 }]}
                 onPress={handleSubmit}
@@ -131,4 +277,9 @@ const styles = StyleSheet.create({
     input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 16, fontSize: 16 },
     button: { padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 10 },
     buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+    divider: { height: 1, backgroundColor: '#ccc', marginVertical: 20, opacity: 0.3 },
+    sectionTitle: { fontSize: 18, fontWeight: 'bold' },
+    exerciseCard: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 10, borderWidth: 1, marginBottom: 10 },
+    exerciseName: { fontWeight: 'bold', fontSize: 16, marginBottom: 4 },
+    addForm: { padding: 15, borderRadius: 12, borderWidth: 1, marginBottom: 20 },
 });

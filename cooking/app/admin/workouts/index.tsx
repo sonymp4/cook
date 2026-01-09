@@ -26,17 +26,15 @@ export default function WorkoutManagement() {
 
     const fetchWorkouts = async () => {
         try {
-            // Assuming GET /api/fitness/workouts returns array
+            setLoading(true);
             const response = await api.get<Workout[]>('/fitness/workouts');
-            // Verify response structure - typically response is just data if using fetch directly or { data: ... }
-            // Using helper api.get usually returns { success: true, data: ... } or raw data depending on implementation
-            // Checking api.ts implementation might be good, but assuming standard wrapper
-            if (Array.isArray(response)) {
+
+            if (response.success && Array.isArray(response.data)) {
+                setWorkouts(response.data);
+            } else if (Array.isArray(response)) {
+                // Fallback for raw response if generic typing mismatches at runtime
                 setWorkouts(response);
-            } else if (response && (response as any).length !== undefined) {
-                setWorkouts(response as any);
             } else {
-                // Fallback
                 setWorkouts([]);
             }
         } catch (error) {
